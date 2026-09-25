@@ -63,7 +63,7 @@
       var tl = gsap.timeline({
         scrollTrigger: {
           trigger: ".manifesto",
-          start: desk ? "top top" : "top 75%",
+          start: desk ? function () { return "top " + (document.querySelector(".nav") || {}).offsetHeight; } : "top 75%",
           end: desk ? "+=120%" : "bottom 45%",
           scrub: 0.5,
           pin: desk
@@ -84,10 +84,13 @@
       { clipPath: "inset(0% 0% 0% 0% round 2px)", ease: "none",
         scrollTrigger: { trigger: lead, start: "top 90%", end: "center 55%", scrub: true } });
   }
-  gsap.utils.toArray(".cucina__side .photo").forEach(function (el, i) {
-    gsap.fromTo(el, { y: 50 + i * 40 }, {
-      y: -30 - i * 20, ease: "none",
-      scrollTrigger: { trigger: ".cucina__grid", start: "top bottom", end: "bottom top", scrub: true }
+  var mmCucina = gsap.matchMedia();
+  mmCucina.add("(min-width: 768px)", function () {
+    gsap.utils.toArray(".cucina__side .photo").forEach(function (el, i) {
+      gsap.fromTo(el, { y: 50 + i * 40 }, {
+        y: -30 - i * 20, ease: "none",
+        scrollTrigger: { trigger: ".cucina__grid", start: "top bottom", end: "bottom top", scrub: true }
+      });
     });
   });
 
@@ -99,11 +102,13 @@
     });
   });
 
-  /* Aperitivo prices rise into place while the board crosses the screen. */
-  gsap.utils.toArray(".board__price").forEach(function (el) {
-    gsap.fromTo(el, { yPercent: 40 }, {
-      yPercent: -10, ease: "none",
-      scrollTrigger: { trigger: el, start: "top bottom", end: "top 40%", scrub: true }
+  /* Aperitivo prices rise into place while the board crosses the screen (desktop only; on a phone the rows are short). */
+  gsap.matchMedia().add("(min-width: 768px)", function () {
+    gsap.utils.toArray(".board__price").forEach(function (el) {
+      gsap.fromTo(el, { yPercent: 30 }, {
+        yPercent: 0, ease: "none",
+        scrollTrigger: { trigger: el, start: "top bottom", end: "top 55%", scrub: true }
+      });
     });
   });
 
@@ -131,17 +136,22 @@
   /* Il posto: the mural frame widens to full bleed, then the text panel slides over it. */
   var frame = document.querySelector(".posto__frame");
   if (frame) {
-    gsap.fromTo(frame,
-      { clipPath: "inset(0% 7% 0% 7% round 24px)" },
-      { clipPath: "inset(0% 0% 0% 0% round 0px)", ease: "none",
-        scrollTrigger: { trigger: frame, start: "top 85%", end: "top 15%", scrub: true } });
+    gsap.matchMedia().add({ desk: "(min-width: 768px)", mob: "(max-width: 767px)" }, function (ctx) {
+      var desk = ctx.conditions.desk;
+      gsap.fromTo(frame,
+        { clipPath: desk ? "inset(0% 7% 0% 7% round 24px)" : "inset(0% 16px 0% 16px round 14px)" },
+        { clipPath: "inset(0% 0px 0% 0px round 0px)", ease: "none",
+          scrollTrigger: { trigger: frame, start: "top 85%", end: desk ? "top 15%" : "top 30%", scrub: true } });
+      if (desk) {
+        gsap.fromTo(".posto__text", { y: 80 }, {
+          y: 0, ease: "none",
+          scrollTrigger: { trigger: ".posto__panel", start: "top bottom", end: "top 55%", scrub: true }
+        });
+      }
+    });
     gsap.fromTo(".posto__img", { yPercent: -6 }, {
       yPercent: 6, ease: "none",
       scrollTrigger: { trigger: frame, start: "top bottom", end: "bottom top", scrub: true }
-    });
-    gsap.fromTo(".posto__text", { y: 80 }, {
-      y: 0, ease: "none",
-      scrollTrigger: { trigger: ".posto__panel", start: "top bottom", end: "top 55%", scrub: true }
     });
   }
 

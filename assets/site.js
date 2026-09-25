@@ -95,22 +95,46 @@
     else { renderStatus(); startClock(); }
   });
 
-  /* Hero entrance: letters rise one by one, then the brush paints in (CSS). */
+  /* Hero and menu title entrance: letters rise one by one (CSS). */
   function splitWord() {
-    var word = document.querySelector(".hero__word");
-    if (!word) return;
-    var text = word.textContent.trim();
-    word.textContent = "";
-    text.split("").forEach(function (ch, i) {
-      var s = document.createElement("span");
-      s.textContent = ch;
-      s.style.setProperty("--i", i);
-      word.appendChild(s);
+    document.querySelectorAll(".hero__word, [data-letters]").forEach(function (word) {
+      var text = word.textContent.trim();
+      word.textContent = "";
+      text.split("").forEach(function (ch, i) {
+        var s = document.createElement("span");
+        s.textContent = ch;
+        s.style.setProperty("--i", i);
+        word.appendChild(s);
+      });
     });
   }
 
-  /* Scroll reveal, once per element. */
+  /* Scroll reveal, once per element.
+     Titles slide up inside a mask; the observed element itself is never clipped,
+     because Chrome reports a fully clipped target as not intersecting. */
   function setupReveal() {
+    /* Menu page: headings and dishes reveal too, tagged here so nothing hides without JS. */
+    document.querySelectorAll(".menu-sec h2").forEach(function (h) { h.setAttribute("data-reveal", "title"); });
+    document.querySelectorAll(".items").forEach(function (list) {
+      Array.prototype.forEach.call(list.children, function (li, i) {
+        li.setAttribute("data-reveal", "item");
+        li.style.setProperty("--i", Math.min(i, 6));
+      });
+    });
+    document.querySelectorAll(".menu-sec__note, .menu-group h3, .allergens, .menu-cta").forEach(function (el) {
+      el.setAttribute("data-reveal", "");
+    });
+
+    document.querySelectorAll('[data-reveal="title"]').forEach(function (t) {
+      var mask = document.createElement("span");
+      var inner = document.createElement("span");
+      mask.className = "rv-mask";
+      inner.className = "rv";
+      while (t.firstChild) inner.appendChild(t.firstChild);
+      mask.appendChild(inner);
+      t.appendChild(mask);
+    });
+
     var els = document.querySelectorAll("[data-reveal]");
     if (!("IntersectionObserver" in window) || reduceMotion) {
       els.forEach(function (el) { el.classList.add("is-in"); });
@@ -120,8 +144,24 @@
       entries.forEach(function (e) {
         if (e.isIntersecting) { e.target.classList.add("is-in"); io.unobserve(e.target); }
       });
-    }, { rootMargin: "0px 0px -10% 0px", threshold: 0.12 });
+    }, { rootMargin: "0px 0px -8% 0px", threshold: 0 });
     els.forEach(function (el) { io.observe(el); });
+  }
+
+  /* Reading progress in the nav when GSAP is not driving it (menu page). */
+  function setupProgress() {
+    var bar = document.querySelector(".nav__progress");
+    if (!bar || root.classList.contains("gsap-on")) return;
+    var ticking = false;
+    function update() {
+      ticking = false;
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      bar.style.transform = "scaleX(" + (max > 0 ? Math.min(1, window.scrollY / max) : 0) + ")";
+    }
+    window.addEventListener("scroll", function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    update();
   }
 
   /* Menu tabs: scroll spy plus a sliding bar (transform only). */
@@ -219,6 +259,7 @@
     renderStatus();
     startClock();
     setupReveal();
+    setupProgress();
     setupTabs();
     setupCounters();
     setupShare();
