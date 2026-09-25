@@ -569,3 +569,72 @@ a.strip__cell strong { display: inline-flex; align-items: center; gap: 8px; }
   }
   .callbar .btn { min-height: 48px; font-size: 16px; padding: 0 10px; }
 }
+
+/* ---------- scroll-driven motion (GSAP, assets/motion.js) ---------- */
+.nav { position: sticky; }
+.nav__progress {
+  position: absolute; left: 0; right: 0; bottom: -1px; height: 2px;
+  background: var(--beer);
+  transform-origin: left center; transform: scaleX(0);
+  pointer-events: none;
+}
+.hero__shade { position: absolute; inset: 0; z-index: -1; background: var(--ground); opacity: 0; pointer-events: none; }
+.hero__photo { will-change: transform; }
+
+/* manifesto: words light up one by one while scrolling */
+.manifesto {
+  padding: clamp(96px, 16vw, 200px) 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 80% 20%, rgba(233, 182, 58, 0.07), transparent 70%),
+    var(--ground);
+}
+.manifesto__text {
+  margin: 0; max-width: 20ch;
+  font-family: var(--font-display); font-weight: 400; text-transform: uppercase;
+  font-size: clamp(40px, 7.4vw, 112px); line-height: 1.02; letter-spacing: 0.005em;
+}
+.manifesto__text .w { display: inline; }
+.pill {
+  display: inline-block; vertical-align: middle;
+  width: 1.9em; height: 0.82em; margin: -0.12em 0.12em 0;
+  border-radius: 999px;
+  background-size: cover; background-position: center;
+  filter: saturate(1.1) contrast(1.05);
+  box-shadow: inset 0 0 0 1px rgba(244, 241, 234, 0.12);
+}
+
+/* marquee: two rows, speed and direction follow the scroll */
+.marquee {
+  overflow: hidden; padding: clamp(40px, 7vw, 88px) 0;
+  border-top: 1px solid var(--rule);
+  display: grid; gap: 4px;
+}
+.marquee__row { overflow: hidden; }
+.marquee__track { display: flex; width: max-content; align-items: center; will-change: transform; }
+.marquee__track span {
+  font-family: var(--font-display); text-transform: uppercase;
+  font-size: clamp(56px, 10vw, 150px); line-height: 1.02; white-space: nowrap;
+  padding: 0 0.28em;
+}
+.marquee__track i {
+  width: 0.5em; height: 0.5em; flex: none; border-radius: 50%;
+  background: var(--beer); font-size: clamp(28px, 4vw, 56px);
+}
+.marquee__row--outline span { color: transparent; -webkit-text-stroke: 1.5px var(--ink-3); }
+.marquee__row--outline i { background: transparent; box-shadow: inset 0 0 0 2px var(--beer); }
+
+/* il posto: the mural frame opens to full width */
+.posto__frame { will-change: clip-path; }
+
+/* when GSAP runs, it owns these properties; CSS scroll timelines step aside */
+.gsap-on .hero__photo img, .gsap-on .posto__img { animation: none !important; }
+.gsap-on .hero__photo img { transform: none; }
+.gsap-on .posto__img { transform: scale(1.12); }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+
+@media (max-width: 767px) {
+  .manifesto__text { max-width: none; font-size: clamp(38px, 11vw, 60px); }
+  .marquee__track span { font-size: clamp(48px, 15vw, 80px); }
+  .marquee__row--outline span { -webkit-text-stroke-width: 1px; }
+}
